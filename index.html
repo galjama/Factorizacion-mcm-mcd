@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MateESO: Suite de Divisibilidad Pro</title>
+    <style>
+        :root {
+            --primary: #4a90e2; --secondary: #f5a623; --success: #7ed321;
+            --danger: #d9534f; --bg: #f0f2f5; --mcd-color: #e91e63;
+            --mcm-color: #00bcd4; --hint: #6c757d;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        
+        nav { background: #2c3e50; width: 100%; display: flex; justify-content: center; gap: 10px; padding: 12px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .tab-btn { padding: 8px 18px; background: #555; color: white; border: none; cursor: pointer; border-radius: 20px; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: white; color: #2c3e50; }
+
+        .diff-selector { margin: 8px 0; display: flex; gap: 10px; }
+        .diff-btn { padding: 4px 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 15px; font-size: 0.75rem; }
+        .diff-btn.active { background: #2c3e50; color: white; border-color: #2c3e50; }
+
+        .container { width: 98%; max-width: 1200px; display: none; flex-direction: column; align-items: center; }
+        .container.active { display: flex; }
+
+        .main-workspace { display: flex; flex-direction: row; gap: 20px; justify-content: center; align-items: flex-start; width: 100%; margin-top: 10px; flex-wrap: nowrap; }
+
+        .game-area { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .game-layout { display: flex; flex-direction: row; gap: 15px; justify-content: center; align-items: flex-start; }
+
+        .num-ref { font-size: 1.2rem; font-weight: bold; color: #2c3e50; background: #fff; padding: 4px 12px; border-radius: 8px; border: 2px solid var(--primary); margin-bottom: 5px; min-width: 100px; text-align: center; }
+
+        .column { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .screen { width: 150px; height: 280px; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; padding: 10px; }
+        
+        .ball { width: 65px; height: 65px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.4rem; font-weight: bold; margin-top: 5px; box-shadow: inset -2px -2px 8px rgba(0,0,0,0.2); }
+        .ball.final { background: #bdc3c7; }
+
+        .factors-container { display: flex; flex-direction: column; gap: 4px; width: 100%; align-items: center; margin-top: 8px; overflow-y: auto; }
+        .factor-ball { width: 28px; height: 28px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85rem; }
+        
+        .highlight-mcd { background: var(--mcd-color) !important; transform: scale(1.1); border: 2px solid white; box-shadow: 0 0 8px var(--mcd-color); }
+        .highlight-mcm { background: var(--mcm-color) !important; transform: scale(1.1); border: 2px solid white; box-shadow: 0 0 8px var(--mcm-color); }
+
+        .side-panel { width: 300px; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: none; text-align: center; position: relative; }
+        
+        /* BOTÓN AYUDA REGLA */
+        .help-rule-btn { width: 20px; height: 20px; border-radius: 50%; background: #eee; border: 1px solid #ccc; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem; font-weight: bold; margin-left: 5px; vertical-align: middle; }
+        .help-rule-btn:hover { background: #ddd; }
+        .rule-tooltip { display: none; background: #333; color: white; padding: 8px; border-radius: 5px; font-size: 0.75rem; position: absolute; width: 80%; left: 10%; top: 50px; z-index: 10; line-height: 1.2; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        .input-group { display: flex; gap: 4px; background: white; padding: 6px; border-radius: 8px; margin-top: 5px; }
+        input { width: 60px; padding: 6px; text-align: center; font-size: 1rem; border: 2px solid #ddd; border-radius: 6px; }
+        
+        .action-btn { padding: 8px 12px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; font-size: 0.85rem; }
+        .btn-div { background: var(--primary); }
+        .btn-solve { background: var(--success); width: 100%; margin-top: 10px; }
+        
+        .msg-feedback { height: 18px; font-weight: bold; font-size: 0.75rem; margin-top: 4px; }
+        .error { color: var(--danger); }
+        .success { color: var(--success); }
+        .final-res-text { font-size: 1rem; margin-top: 10px; font-weight: bold; color: #333; }
+        
+        .hint-box { display: none; background: #fff3cd; padding: 12px; border-radius: 10px; margin: 5px; max-width: 800px; font-size: 0.8rem; border: 1px solid #ffeeba; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <button id="nav-f" class="tab-btn active" onclick="switchTab('f-tab')">Factorización</button>
+    <button id="nav-mcd" class="tab-btn" onclick="switchTab('mcd-tab')">MCD</button>
+    <button id="nav-mcm" class="tab-btn" onclick="switchTab('mcm-tab')">MCM</button>
+</nav>
+
+<button class="action-btn" style="background:var(--hint); margin:10px;" onclick="toggleAyuda()">💡 MOSTRAR PRIMOS</button>
+<div id="ayuda-primos" class="hint-box"><strong>Primos:</strong> 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97...</div>
+
+<div id="f-tab" class="container active">
+    <div class="diff-selector">
+        <button id="f-btn-n" class="diff-btn active" onclick="setDiff('f', 'normal')">Normal (2-200)</button>
+        <button id="f-btn-d" class="diff-btn" onclick="setDiff('f', 'dificil')">Difícil (201-1000)</button>
+    </div>
+    <div class="main-workspace">
+        <div class="game-area">
+            <div id="f-ref-val" class="num-ref">?</div>
+            <div class="game-layout">
+                <div class="column">
+                    <div class="screen"><div id="f-ball" class="ball">...</div></div>
+                    <div class="input-group"><input type="number" id="f-in" onkeydown="if(event.key==='Enter') dividirF()"><button class="action-btn btn-div" onclick="dividirF()">DIVIDIR</button></div>
+                </div>
+                <div class="column">
+                    <div class="screen"><div id="f-list" class="factors-container"></div></div>
+                </div>
+            </div>
+            <div id="f-msg" class="msg-feedback"></div>
+        </div>
+        <div id="f-side" class="side-panel">
+            <h2 class="success" style="margin:0">¡Correcto!</h2>
+            <div id="f-res-potencia" class="final-res-text"></div>
+        </div>
+    </div>
+</div>
+
+<div id="mcd-tab" class="container">
+    <div class="diff-selector">
+        <button id="mcd-btn-n" class="diff-btn active" onclick="setDiff('mcd', 'normal')">Normal</button>
+        <button id="mcd-btn-d" class="diff-btn" onclick="setDiff('mcd', 'dificil')">Difícil</button>
+    </div>
+    <div class="main-workspace">
+        <div class="game-area">
+            <div class="game-layout">
+                <div class="column">
+                    <div id="mcd-ref-a" class="num-ref">?</div>
+                    <div class="screen"><div id="mcd-ball-a" class="ball">.</div><div id="mcd-list-a" class="factors-container"></div></div>
+                    <div class="input-group"><input type="number" id="mcd-in-a" onkeydown="if(event.key==='Enter') divMCD('A')"><button class="action-btn btn-div" onclick="divMCD('A')">DIVIDIR</button></div>
+                </div>
+                <div class="column">
+                    <div id="mcd-ref-b" class="num-ref">?</div>
+                    <div class="screen"><div id="mcd-ball-b" class="ball">.</div><div id="mcd-list-b" class="factors-container"></div></div>
+                    <div class="input-group"><input type="number" id="mcd-in-b" onkeydown="if(event.key==='Enter') divMCD('B')"><button class="action-btn btn-div" onclick="divMCD('B')">DIVIDIR</button></div>
+                </div>
+            </div>
+        </div>
+        <div id="mcd-side" class="side-panel" style="border-top:6px solid var(--mcd-color)">
+            <h3 style="margin-top:0; display:inline-block">¿MCD?</h3>
+            <div class="help-rule-btn" onmouseover="showRule('mcd-rule')" onmouseout="hideRule('mcd-rule')" onclick="toggleRule('mcd-rule')">?</div>
+            <div id="mcd-rule" class="rule-tooltip">Factores comunes al menor exponente.</div>
+            <br>
+            <input type="number" id="mcd-ans" onkeydown="if(event.key==='Enter') checkMCD()">
+            <button class="action-btn btn-solve" onclick="checkMCD()">COMPROBAR</button>
+            <div id="mcd-final-msg" class="final-res-text"></div>
+        </div>
+    </div>
+</div>
+
+<div id="mcm-tab" class="container">
+    <div class="diff-selector">
+        <button id="mcm-btn-n" class="diff-btn active" onclick="setDiff('mcm', 'normal')">Normal</button>
+        <button id="mcm-btn-d" class="diff-btn" onclick="setDiff('mcm', 'dificil')">Difícil</button>
+    </div>
+    <div class="main-workspace">
+        <div class="game-area">
+            <div class="game-layout">
+                <div class="column">
+                    <div id="mcm-ref-a" class="num-ref">?</div>
+                    <div class="screen"><div id="mcm-ball-a" class="ball">.</div><div id="mcm-list-a" class="factors-container"></div></div>
+                    <div class="input-group"><input type="number" id="mcm-in-a" onkeydown="if(event.key==='Enter') divMCM('A')"><button class="action-btn btn-div" onclick="divMCM('A')">DIVIDIR</button></div>
+                </div>
+                <div class="column">
+                    <div id="mcm-ref-b" class="num-ref">?</div>
+                    <div class="screen"><div id="mcm-ball-b" class="ball">.</div><div id="mcm-list-b" class="factors-container"></div></div>
+                    <div class="input-group"><input type="number" id="mcm-in-b" onkeydown="if(event.key==='Enter') divMCM('B')"><button class="action-btn btn-div" onclick="divMCM('B')">DIVIDIR</button></div>
+                </div>
+            </div>
+        </div>
+        <div id="mcm-side" class="side-panel" style="border-top:6px solid var(--mcm-color)">
+            <h3 style="margin-top:0; display:inline-block">¿MCM?</h3>
+            <div class="help-rule-btn" onmouseover="showRule('mcm-rule')" onmouseout="hideRule('mcm-rule')" onclick="toggleRule('mcm-rule')">?</div>
+            <div id="mcm-rule" class="rule-tooltip">Factores comunes y no comunes al mayor exponente.</div>
+            <br>
+            <input type="number" id="mcm-ans" onkeydown="if(event.key==='Enter') checkMCM()">
+            <button class="action-btn btn-solve" onclick="checkMCM()">COMPROBAR</button>
+            <div id="mcm-final-msg" class="final-res-text"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDiff = { f: 'normal', mcd: 'normal', mcm: 'normal' };
+    let fA, fAf, fAi, mAi, mBi, mA, mB, mAf, mBf, mSol, mPot, cAi, cBi, cA, cB, cAf, cBf, cSol, cPot;
+
+    function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+    function lcm(a, b) { return (a * b) / (gcd(a, b) || 1); }
+    function esPrimo(n) { if (n < 2) return false; for (let i = 2; i <= Math.sqrt(n); i++) if (n % i === 0) return false; return true; }
+    function count(arr) { let c={}; arr.forEach(x=>c[x]=(c[x]||0)+1); return c; }
+    function toggleAyuda() { let b=document.getElementById('ayuda-primos'); b.style.display=(b.style.display==='block'?'none':'block'); }
+    
+    // Funciones Ayuda Reglas
+    function showRule(id) { document.getElementById(id).style.display = 'block'; }
+    function hideRule(id) { document.getElementById(id).style.display = 'none'; }
+    function toggleRule(id) { let r = document.getElementById(id); r.style.display = (r.style.display==='block'?'none':'block'); }
+
+    function setDiff(tab, val) {
+        currentDiff[tab] = val;
+        document.getElementById(`${tab}-btn-n`).classList.toggle('active', val==='normal');
+        document.getElementById(`${tab}-btn-d`).classList.toggle('active', val==='dificil');
+        if(tab==='f') initF(); if(tab==='mcd') initMCD(); if(tab==='mcm') initMCM();
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(t).classList.add('active');
+        document.getElementById('nav-' + t.split('-')[0]).classList.add('active');
+        if(t==='f-tab') initF(); if(t==='mcd-tab') initMCD(); if(t==='mcm-tab') initMCM();
+    }
+
+    function initF() {
+        fAi = (currentDiff.f==='normal') ? Math.floor(Math.random()*198)+2 : Math.floor(Math.random()*800)+201;
+        fA = fAi; fAf = [];
+        document.getElementById('f-ref-val').innerText = "Nº: " + fAi;
+        document.getElementById('f-ball').innerText = fA;
+        document.getElementById('f-ball').classList.remove('final');
+        document.getElementById('f-list').innerHTML = "";
+        document.getElementById('f-side').style.display = "none";
+        document.getElementById('f-msg').innerText = "";
+        document.getElementById('f-in').focus();
+    }
+
+    function dividirF() {
+        let p = parseInt(document.getElementById('f-in').value);
+        if(!esPrimo(p)) { document.getElementById('f-msg').innerText = "No es primo"; return; }
+        if(fA % p === 0) {
+            fA /= p; fAf.push(p);
+            document.getElementById('f-ball').innerText = fA;
+            let d=document.createElement('div'); d.className='factor-ball'; d.innerText=p; document.getElementById('f-list').appendChild(d);
+            if(fA === 1) {
+                document.getElementById('f-ball').classList.add('final');
+                document.getElementById('f-side').style.display = "block";
+                document.getElementById('f-res-potencia').innerHTML = getPotHTML(fAf) + " = " + fAi;
+                setTimeout(initF, 6000);
+            }
+        }
+        document.getElementById('f-in').value = "";
+    }
+
+    function initMCD() {
+        if(currentDiff.mcd==='normal') {
+            mAi = [12, 18, 24, 30, 45, 60][Math.floor(Math.random()*6)];
+            do { mBi = [18, 20, 30, 40, 60, 90][Math.floor(Math.random()*6)]; } while (mBi === mAi);
+        } else {
+            do {
+                let base = [2,3,4,5,6,10][Math.floor(Math.random()*6)];
+                mAi = base * (Math.floor(Math.random()*15)+2);
+                mBi = base * (Math.floor(Math.random()*15)+2);
+            } while(gcd(mAi,mBi)>99 || mAi===mBi);
+        }
+        mA=mAi; mB=mBi; mAf=[]; mBf=[];
+        document.getElementById('mcd-ref-a').innerText = "A: "+mAi; document.getElementById('mcd-ref-b').innerText = "B: "+mBi;
+        document.getElementById('mcd-ball-a').innerText=mA; document.getElementById('mcd-ball-b').innerText=mB;
+        document.getElementById('mcd-list-a').innerHTML=""; document.getElementById('mcd-list-b').innerHTML="";
+        document.getElementById('mcd-side').style.display="none"; document.getElementById('mcd-final-msg').innerHTML="";
+        document.getElementById('mcd-ans').value="";
+    }
+
+    function divMCD(t) {
+        let i=document.getElementById('mcd-in-'+t.toLowerCase()), p=parseInt(i.value);
+        if(!esPrimo(p)) return;
+        if((t==='A'?mA:mB) % p === 0) {
+            if(t==='A'){ mA/=p; mAf.push(p); document.getElementById('mcd-ball-a').innerText=mA; renderBall('mcd-list-a',p); }
+            else { mB/=p; mBf.push(p); document.getElementById('mcd-ball-b').innerText=mB; renderBall('mcd-list-b',p); }
+        }
+        i.value=""; if(mA===1 && mB===1) {
+            const cA=count(mAf), cB=count(mBf);
+            let res=1, comunesUnicos=[], comunesTotalesA=[], comunesTotalesB=[];
+            for(let p in cA) {
+                if(cB[p]) {
+                    let minExp = Math.min(cA[p], cB[p]);
+                    for(let k=0; k<minExp; k++) { res*=p; comunesUnicos.push(p); }
+                    for(let k=0; k<cA[p]; k++) comunesTotalesA.push(p);
+                    for(let k=0; k<cB[p]; k++) comunesTotalesB.push(p);
+                }
+            }
+            mSol=res; mPot=getPotHTML(comunesUnicos);
+            ilumGeneral('mcd-list-a', comunesTotalesA, 'highlight-mcd');
+            ilumGeneral('mcd-list-b', comunesTotalesB, 'highlight-mcd');
+            document.getElementById('mcd-side').style.display="block"; document.getElementById('mcd-ans').focus();
+        }
+    }
+
+    function checkMCD() {
+        let u=parseInt(document.getElementById('mcd-ans').value), m=document.getElementById('mcd-final-msg');
+        if(u===mSol){ m.innerHTML=`<span class="success">¡Correcto! MCD=${mPot}=${mSol}</span>`; setTimeout(initMCD,6000); }
+        else m.innerHTML=`<span class="error">Mal</span>`;
+    }
+
+    function initMCM() {
+        if(currentDiff.mcm==='normal') {
+            cAi = [6, 8, 12, 15, 20, 30][Math.floor(Math.random()*6)];
+            do { cBi = [4, 9, 10, 18, 25, 12][Math.floor(Math.random()*6)]; } while (cBi === cAi);
+        } else {
+            do { cAi = Math.floor(Math.random()*50)+10; cBi = Math.floor(Math.random()*50)+10;
+            } while(lcm(cAi,cBi)>1000 || cAi===cBi || gcd(cAi,cBi)===1);
+        }
+        cA=cAi; cB=cBi; cAf=[]; cBf=[];
+        document.getElementById('mcm-ref-a').innerText="A: "+cAi; document.getElementById('mcm-ref-b').innerText="B: "+cBi;
+        document.getElementById('mcm-ball-a').innerText=cA; document.getElementById('mcm-ball-b').innerText=cB;
+        document.getElementById('mcm-list-a').innerHTML=""; document.getElementById('mcm-list-b').innerHTML="";
+        document.getElementById('mcm-side').style.display="none"; document.getElementById('mcm-final-msg').innerHTML="";
+        document.getElementById('mcm-ans').value="";
+    }
+
+    function divMCM(t) {
+        let i=document.getElementById('mcm-in-'+t.toLowerCase()), p=parseInt(i.value);
+        if(!esPrimo(p)) return;
+        if((t==='A'?cA:cB) % p === 0) {
+            if(t==='A'){ cA/=p; cAf.push(p); document.getElementById('mcm-ball-a').innerText=cA; renderBall('mcm-list-a',p); }
+            else { cB/=p; cBf.push(p); document.getElementById('mcm-ball-b').innerText=cB; renderBall('mcm-list-b',p); }
+        }
+        i.value=""; if(cA===1 && cB===1) {
+            const coA=count(cAf), coB=count(cBf);
+            let pr=new Set([...Object.keys(coA),...Object.keys(coB)]), res=1, hA=[], hB=[], total=[];
+            pr.forEach(p=>{
+                let vA=coA[p]||0, vB=coB[p]||0, maxV=Math.max(vA,vB);
+                res *= Math.pow(p,maxV); for(let k=0;k<maxV;k++) total.push(p);
+                for(let k=0; k<maxV; k++) {
+                   if(k < vA) hA.push(p);
+                   if(k < vB) hB.push(p);
+                }
+            });
+            cSol=res; cPot=getPotHTML(total.sort((a,b)=>a-b));
+            ilumGeneral('mcm-list-a', hA, 'highlight-mcm');
+            ilumGeneral('mcm-list-b', hB, 'highlight-mcm');
+            document.getElementById('mcm-side').style.display="block"; document.getElementById('mcm-ans').focus();
+        }
+    }
+
+    function checkMCM() {
+        let u=parseInt(document.getElementById('mcm-ans').value), m=document.getElementById('mcm-final-msg');
+        if(u===cSol){ m.innerHTML=`<span class="success">¡Correcto! MCM=${cPot}=${cSol}</span>`; setTimeout(initMCM,6000); }
+        else m.innerHTML=`<span class="error">Mal</span>`;
+    }
+
+    function renderBall(id,v){ let d=document.createElement('div'); d.className='factor-ball'; d.innerText=v; d.dataset.v=v; document.getElementById(id).appendChild(d); }
+    function getPotHTML(f){ if(!f.length) return "1"; const c=count(f); return Object.keys(c).sort((a,b)=>a-b).map(b=>c[b]>1?`${b}<sup>${c[b]}</sup>`:b).join('·'); }
+    
+    function ilumGeneral(id, vals, cls) {
+        let balls = document.getElementById(id).querySelectorAll('.factor-ball');
+        let t = [...vals];
+        balls.forEach(b => {
+            let idx = t.indexOf(b.dataset.v);
+            if(idx !== -1) {
+                b.classList.add(cls);
+                t.splice(idx, 1);
+            }
+        });
+    }
+
+    initF();
+</script>
+</body>
+</html>
