@@ -32,9 +32,9 @@
         .num-ref { font-size: 1.2rem; font-weight: bold; color: #2c3e50; background: #fff; padding: 4px 12px; border-radius: 8px; border: 2px solid var(--primary); margin-bottom: 5px; min-width: 100px; text-align: center; }
 
         .column { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .screen { width: 150px; height: 280px; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; padding: 10px; }
+        .screen { width: 140px; height: 260px; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; padding: 10px; }
         
-        .ball { width: 65px; height: 65px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.4rem; font-weight: bold; margin-top: 5px; box-shadow: inset -2px -2px 8px rgba(0,0,0,0.2); }
+        .ball { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; font-weight: bold; margin-top: 5px; box-shadow: inset -2px -2px 8px rgba(0,0,0,0.2); }
         .ball.final { background: #bdc3c7; }
 
         .factors-container { display: flex; flex-direction: column; gap: 4px; width: 100%; align-items: center; margin-top: 8px; overflow-y: auto; }
@@ -43,12 +43,12 @@
         .highlight-mcd { background: var(--mcd-color) !important; transform: scale(1.1); border: 2px solid white; box-shadow: 0 0 8px var(--mcd-color); }
         .highlight-mcm { background: var(--mcm-color) !important; transform: scale(1.1); border: 2px solid white; box-shadow: 0 0 8px var(--mcm-color); }
 
-        .side-panel { width: 300px; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: none; text-align: center; position: relative; }
+        .side-panel { width: 320px; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: none; text-align: center; position: relative; }
         
-        /* BOTÓN AYUDA REGLA */
         .help-rule-btn { width: 20px; height: 20px; border-radius: 50%; background: #eee; border: 1px solid #ccc; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem; font-weight: bold; margin-left: 5px; vertical-align: middle; }
-        .help-rule-btn:hover { background: #ddd; }
-        .rule-tooltip { display: none; background: #333; color: white; padding: 8px; border-radius: 5px; font-size: 0.75rem; position: absolute; width: 80%; left: 10%; top: 50px; z-index: 10; line-height: 1.2; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .rule-tooltip { display: none; background: #333; color: white; padding: 8px; border-radius: 5px; font-size: 0.75rem; position: absolute; width: 85%; left: 7.5%; top: 60px; z-index: 10; line-height: 1.3; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        .info-legend { font-size: 0.75rem; color: #555; background: #e8f0fe; padding: 6px 10px; border-radius: 5px; margin-top: 5px; display: none; border-left: 3px solid var(--primary); }
 
         .input-group { display: flex; gap: 4px; background: white; padding: 6px; border-radius: 8px; margin-top: 5px; }
         input { width: 60px; padding: 6px; text-align: center; font-size: 1rem; border: 2px solid #ddd; border-radius: 6px; }
@@ -69,12 +69,12 @@
 
 <nav>
     <button id="nav-f" class="tab-btn active" onclick="switchTab('f-tab')">Factorización</button>
-    <button id="nav-mcd" class="tab-btn" onclick="switchTab('mcd-tab')">MCD</button>
-    <button id="nav-mcm" class="tab-btn" onclick="switchTab('mcm-tab')">MCM</button>
+    <button id="nav-mcd" class="tab-btn" onclick="switchTab('mcd-tab')">Máximo Común Divisor (MCD)</button>
+    <button id="nav-mcm" class="tab-btn" onclick="switchTab('mcm-tab')">Mínimo Común Múltiplo (MCM)</button>
 </nav>
 
 <button class="action-btn" style="background:var(--hint); margin:10px;" onclick="toggleAyuda()">💡 MOSTRAR PRIMOS</button>
-<div id="ayuda-primos" class="hint-box"><strong>Primos:</strong> 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97...</div>
+<div id="ayuda-primos" class="hint-box"><strong>Primos:</strong> 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71...</div>
 
 <div id="f-tab" class="container active">
     <div class="diff-selector">
@@ -121,13 +121,14 @@
                     <div class="input-group"><input type="number" id="mcd-in-b" onkeydown="if(event.key==='Enter') divMCD('B')"><button class="action-btn btn-div" onclick="divMCD('B')">DIVIDIR</button></div>
                 </div>
             </div>
+            <div id="mcd-info-leg" class="info-legend">✨ Los números iluminados se repiten en ambos lados.</div>
         </div>
         <div id="mcd-side" class="side-panel" style="border-top:6px solid var(--mcd-color)">
-            <h3 style="margin-top:0; display:inline-block">¿MCD?</h3>
-            <div class="help-rule-btn" onmouseover="showRule('mcd-rule')" onmouseout="hideRule('mcd-rule')" onclick="toggleRule('mcd-rule')">?</div>
-            <div id="mcd-rule" class="rule-tooltip">Factores comunes al menor exponente.</div>
+            <h3 style="margin-top:0; display:inline-block; font-size: 1.1rem;">¿MCD?</h3>
+            <div class="help-rule-btn" onmouseover="showRule('mcd-rule')" onmouseout="hideRule('mcd-rule')">?</div>
+            <div id="mcd-rule" class="rule-tooltip"><strong>Máximo Común Divisor:</strong> Multiplica solo los factores comunes al menor exponente.</div>
             <br>
-            <input type="number" id="mcd-ans" onkeydown="if(event.key==='Enter') checkMCD()">
+            <input type="number" id="mcd-ans" placeholder="?" onkeydown="if(event.key==='Enter') checkMCD()">
             <button class="action-btn btn-solve" onclick="checkMCD()">COMPROBAR</button>
             <div id="mcd-final-msg" class="final-res-text"></div>
         </div>
@@ -153,13 +154,14 @@
                     <div class="input-group"><input type="number" id="mcm-in-b" onkeydown="if(event.key==='Enter') divMCM('B')"><button class="action-btn btn-div" onclick="divMCM('B')">DIVIDIR</button></div>
                 </div>
             </div>
+            <div id="mcm-info-leg" class="info-legend">✨ Los números iluminados son los que necesitas para el cálculo.</div>
         </div>
         <div id="mcm-side" class="side-panel" style="border-top:6px solid var(--mcm-color)">
-            <h3 style="margin-top:0; display:inline-block">¿MCM?</h3>
-            <div class="help-rule-btn" onmouseover="showRule('mcm-rule')" onmouseout="hideRule('mcm-rule')" onclick="toggleRule('mcm-rule')">?</div>
-            <div id="mcm-rule" class="rule-tooltip">Factores comunes y no comunes al mayor exponente.</div>
+            <h3 style="margin-top:0; display:inline-block; font-size: 1.1rem;">¿MCM?</h3>
+            <div class="help-rule-btn" onmouseover="showRule('mcm-rule')" onmouseout="hideRule('mcm-rule')">?</div>
+            <div id="mcm-rule" class="rule-tooltip"><strong>Mínimo Común Múltiplo:</strong> Multiplica los factores comunes y no comunes al mayor exponente.</div>
             <br>
-            <input type="number" id="mcm-ans" onkeydown="if(event.key==='Enter') checkMCM()">
+            <input type="number" id="mcm-ans" placeholder="?" onkeydown="if(event.key==='Enter') checkMCM()">
             <button class="action-btn btn-solve" onclick="checkMCM()">COMPROBAR</button>
             <div id="mcm-final-msg" class="final-res-text"></div>
         </div>
@@ -175,11 +177,8 @@
     function esPrimo(n) { if (n < 2) return false; for (let i = 2; i <= Math.sqrt(n); i++) if (n % i === 0) return false; return true; }
     function count(arr) { let c={}; arr.forEach(x=>c[x]=(c[x]||0)+1); return c; }
     function toggleAyuda() { let b=document.getElementById('ayuda-primos'); b.style.display=(b.style.display==='block'?'none':'block'); }
-    
-    // Funciones Ayuda Reglas
     function showRule(id) { document.getElementById(id).style.display = 'block'; }
     function hideRule(id) { document.getElementById(id).style.display = 'none'; }
-    function toggleRule(id) { let r = document.getElementById(id); r.style.display = (r.style.display==='block'?'none':'block'); }
 
     function setDiff(tab, val) {
         currentDiff[tab] = val;
@@ -214,7 +213,7 @@
         if(fA % p === 0) {
             fA /= p; fAf.push(p);
             document.getElementById('f-ball').innerText = fA;
-            let d=document.createElement('div'); d.className='factor-ball'; d.innerText=p; document.getElementById('f-list').appendChild(d);
+            renderBall('f-list', p);
             if(fA === 1) {
                 document.getElementById('f-ball').classList.add('final');
                 document.getElementById('f-side').style.display = "block";
@@ -241,6 +240,7 @@
         document.getElementById('mcd-ball-a').innerText=mA; document.getElementById('mcd-ball-b').innerText=mB;
         document.getElementById('mcd-list-a').innerHTML=""; document.getElementById('mcd-list-b').innerHTML="";
         document.getElementById('mcd-side').style.display="none"; document.getElementById('mcd-final-msg').innerHTML="";
+        document.getElementById('mcd-info-leg').style.display="none";
         document.getElementById('mcd-ans').value="";
     }
 
@@ -253,19 +253,21 @@
         }
         i.value=""; if(mA===1 && mB===1) {
             const cA=count(mAf), cB=count(mBf);
-            let res=1, comunesUnicos=[], comunesTotalesA=[], comunesTotalesB=[];
+            let res=1, comUnicos=[], comTotalesA=[], comTotalesB=[];
             for(let p in cA) {
                 if(cB[p]) {
                     let minExp = Math.min(cA[p], cB[p]);
-                    for(let k=0; k<minExp; k++) { res*=p; comunesUnicos.push(p); }
-                    for(let k=0; k<cA[p]; k++) comunesTotalesA.push(p);
-                    for(let k=0; k<cB[p]; k++) comunesTotalesB.push(p);
+                    for(let k=0; k<minExp; k++) { res*=p; comUnicos.push(p); }
+                    for(let k=0; k<cA[p]; k++) comTotalesA.push(p);
+                    for(let k=0; k<cB[p]; k++) comTotalesB.push(p);
                 }
             }
-            mSol=res; mPot=getPotHTML(comunesUnicos);
-            ilumGeneral('mcd-list-a', comunesTotalesA, 'highlight-mcd');
-            ilumGeneral('mcd-list-b', comunesTotalesB, 'highlight-mcd');
-            document.getElementById('mcd-side').style.display="block"; document.getElementById('mcd-ans').focus();
+            mSol=res; mPot=getPotHTML(comUnicos);
+            ilumGeneral('mcd-list-a', comTotalesA, 'highlight-mcd');
+            ilumGeneral('mcd-list-b', comTotalesB, 'highlight-mcd');
+            document.getElementById('mcd-side').style.display="block";
+            document.getElementById('mcd-info-leg').style.display="block";
+            document.getElementById('mcd-ans').focus();
         }
     }
 
@@ -288,6 +290,7 @@
         document.getElementById('mcm-ball-a').innerText=cA; document.getElementById('mcm-ball-b').innerText=cB;
         document.getElementById('mcm-list-a').innerHTML=""; document.getElementById('mcm-list-b').innerHTML="";
         document.getElementById('mcm-side').style.display="none"; document.getElementById('mcm-final-msg').innerHTML="";
+        document.getElementById('mcm-info-leg').style.display="none";
         document.getElementById('mcm-ans').value="";
     }
 
@@ -312,7 +315,9 @@
             cSol=res; cPot=getPotHTML(total.sort((a,b)=>a-b));
             ilumGeneral('mcm-list-a', hA, 'highlight-mcm');
             ilumGeneral('mcm-list-b', hB, 'highlight-mcm');
-            document.getElementById('mcm-side').style.display="block"; document.getElementById('mcm-ans').focus();
+            document.getElementById('mcm-side').style.display="block";
+            document.getElementById('mcm-info-leg').style.display="block";
+            document.getElementById('mcm-ans').focus();
         }
     }
 
